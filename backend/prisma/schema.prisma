@@ -1,0 +1,279 @@
+// Smart Stationery Store ERP — Phase 1: Auth & Foundation
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// MODELS
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  passwordHash  String
+  role          String   @default("CASHIER")
+  status        String   @default("ACTIVE")
+  phone         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  refreshTokens    RefreshToken[]
+  auditLogs        AuditLog[]
+  stockMovements   StockMovement[]
+  transactions     Transaction[]
+  purchaseOrders   PurchaseOrder[]
+  expenses         Expense[]
+  supplierPayments SupplierPayment[]
+  refunds          Refund[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String
+  entityId   String?
+  details    String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("categories")
+}
+
+model Product {
+  id                 String              @id @default(cuid())
+  name               String
+  description        String?
+  sku                String              @unique
+  barcode            String?             @unique
+  purchasePrice      Float
+  sellingPrice       Float
+  gst                Float               @default(18)
+  image              String?
+  stock              Int                 @default(0)
+  damagedStock       Int                 @default(0)
+  reservedStock      Int                 @default(0)
+  lowStockThreshold  Int                 @default(10)
+  categoryId         String
+  category           Category            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  stockMovements     StockMovement[]
+  saleItems          SaleItem[]
+  purchaseOrderItems PurchaseOrderItem[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@index([categoryId])
+  @@map("products")
+}
+
+model StockMovement {
+  id            String   @id @default(cuid())
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity      Int
+  type          String   // RECEIVED | SOLD | DAMAGED | RESERVED | RETURNED | ADJUSTMENT
+  unitPrice     Float?
+  costPrice     Float?
+  reason        String?
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt     DateTime @default(now())
+
+  @@index([productId])
+  @@index([userId])
+  @@map("stock_movements")
+}
+
+model Transaction {
+  id            String     @id @default(cuid())
+  invoiceNumber String     @unique
+  cashierId     String?
+  cashier       User?      @relation(fields: [cashierId], references: [id], onDelete: SetNull)
+  customerName  String?
+  customerPhone String?
+  subtotal      Float
+  discount      Float      @default(0)
+  gstAmount     Float
+  grandTotal    Float
+  paymentMethod String     // CASH | UPI
+  paymentStatus String     // PAID | PENDING
+  items         SaleItem[]
+  refunds       Refund[]
+  createdAt     DateTime   @default(now())
+
+  @@index([cashierId])
+  @@map("transactions")
+}
+
+model SaleItem {
+  id            String      @id @default(cuid())
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  productId     String
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity      Int
+  price         Float
+  gstRate       Float
+  gstAmount     Float
+  total         Float
+
+  @@index([transactionId])
+  @@index([productId])
+  @@map("sale_items")
+}
+
+model Supplier {
+  id             String          @id @default(cuid())
+  name           String
+  contactName    String?
+  email          String?
+  phone          String?
+  address        String?
+  gstin          String?
+  purchaseOrders   PurchaseOrder[]
+  supplierPayments SupplierPayment[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@map("suppliers")
+}
+
+model PurchaseOrder {
+  id           String              @id @default(cuid())
+  poNumber     String              @unique
+  supplierId   String
+  supplier     Supplier            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  status       String              @default("PENDING") // PENDING | ORDERED | RECEIVED | CANCELLED
+  totalAmount  Float
+  items            PurchaseOrderItem[]
+  supplierPayments SupplierPayment[]
+  userId           String?
+  user             User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([supplierId])
+  @@index([userId])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(cuid())
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity        Int
+  unitCost        Float
+  totalCost       Float
+
+  @@index([purchaseOrderId])
+  @@index([productId])
+  @@map("purchase_order_items")
+}
+
+// ---------------------------------------------------------------------------
+// PHASE 6 — ACCOUNTING
+// ---------------------------------------------------------------------------
+
+model Expense {
+  id          String   @id @default(cuid())
+  category    String   // RENT | SALARY | UTILITIES | SUPPLIES | MARKETING | OTHER
+  description String
+  amount      Float
+  date        DateTime
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@map("expenses")
+}
+
+model SupplierPayment {
+  id              String        @id @default(cuid())
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  supplierId      String
+  supplier        Supplier      @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  amount          Float
+  paymentMethod   String        // CASH | UPI | BANK_TRANSFER | CHEQUE
+  reference       String?
+  note            String?
+  paidAt          DateTime
+  userId          String?
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt       DateTime      @default(now())
+
+  @@index([purchaseOrderId])
+  @@index([supplierId])
+  @@index([userId])
+  @@map("supplier_payments")
+}
+
+model Refund {
+  id            String      @id @default(cuid())
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  amount        Float
+  reason        String
+  processedById String?
+  processedBy   User?       @relation(fields: [processedById], references: [id], onDelete: SetNull)
+  createdAt     DateTime    @default(now())
+
+  @@index([transactionId])
+  @@index([processedById])
+  @@map("refunds")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String   // LOW_STOCK | OUT_OF_STOCK | PO_UPDATE | REFUND_ALERT | SYSTEM
+  title     String
+  message   String
+  priority  String   @default("MEDIUM") // HIGH | MEDIUM | INFO
+  read      Boolean  @default(false)
+  linkTab   String?  // Tab to navigate to e.g. "products" | "purchase-orders"
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+

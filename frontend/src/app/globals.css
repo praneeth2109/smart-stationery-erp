@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "Fraunces", serif;
+  --font-body: "Inter", sans-serif;
+  --font-ledger: "IBM Plex Mono", monospace;
+}
+
+html,
+body {
+  background-color: #0d0b09;
+  color: #ede6d6;
+}
+
+* {
+  scrollbar-color: #4c4c4e #14120f;
+  scrollbar-width: thin;
+}
+
+/* Reduced motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@layer components {
+  /* The signature surface: a leather-bound panel with embossed brass edge */
+  .desk-panel {
+    @apply relative rounded-panel border border-brass-700/40 bg-charcoal-800 bg-leather shadow-panel;
+  }
+
+  .desk-panel::before {
+    content: "";
+    @apply pointer-events-none absolute inset-0 rounded-panel;
+    background: var(--tw-gradient-stops);
+    background-image: linear-gradient(180deg, rgba(228, 199, 102, 0.06), transparent 30%);
+  }
+
+  /* Embossed input control, brushed metal feel */
+  .control-input,
+  .input-field {
+    @apply w-full rounded-control border border-brass-700/30 bg-charcoal-900 px-4 py-2.5
+      font-body text-sm text-parchment placeholder:text-steel-400 shadow-inset-deep
+      outline-none transition focus:border-brass-400 focus:shadow-brass-glow;
+  }
+
+  select.control-input,
+  select.input-field {
+    @apply bg-charcoal-900 text-parchment cursor-pointer;
+  }
+
+  select.control-input option,
+  select.input-field option {
+    @apply bg-charcoal-900 text-parchment py-2.5;
+  }
+
+  /* Brass embossed button, like a lever on an executive desk */
+  .btn-brass {
+    @apply relative inline-flex items-center justify-center gap-2 rounded-control
+      bg-brass-sheen px-6 py-3 font-body font-semibold tracking-wide text-charcoal-950
+      shadow-embossed transition-transform duration-150 ease-out
+      hover:brightness-110 active:translate-y-[1px] active:shadow-inset-deep
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-control border
+      border-steel-600/50 bg-charcoal-700 px-5 py-3 font-body text-parchment
+      shadow-embossed transition hover:border-brass-500/50 hover:text-brass-300;
+  }
+
+  .label-eyebrow {
+    @apply font-ledger text-xs uppercase tracking-[0.25em] text-brass-300/80;
+  }
+
+  .walnut-strip {
+    @apply bg-walnutgrain;
+  }
+
+  .card-leather {
+    @apply relative rounded-panel border border-brass-700/30 bg-charcoal-800 p-6 shadow-panel;
+  }
+}
