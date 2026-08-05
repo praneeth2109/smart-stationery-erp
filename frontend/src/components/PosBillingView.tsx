@@ -204,7 +204,7 @@ export default function PosBillingView() {
     }
   }
 
-  async function processCheckout() {
+  async function processCheckout(utrRef?: string) {
     if (!accessToken) return;
     setIsSubmitting(true);
     try {
@@ -609,10 +609,11 @@ export default function PosBillingView() {
       {upiSimAmount !== null && (
         <UpiSimModal
           amount={upiSimAmount}
-          onSuccess={() => processCheckout()}
+          onSuccess={(utrRef) => processCheckout(utrRef)}
           onClose={() => setUpiSimAmount(null)}
         />
       )}
+
 
       {/* Receipt Invoice Modal */}
       {receiptInvoice && (

@@ -81,9 +81,8 @@ export default function DashboardLayout({
 
       {/* Skewomorphic Sidebar */}
       <aside
-        className={`w-64 border-r border-brass-700/20 bg-charcoal-900 p-6 flex flex-col justify-between shadow-2xl z-50 fixed inset-y-0 left-0 transition-transform duration-300 lg:static lg:translate-x-0 ${
-          isMobileOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`w-64 border-r border-brass-700/20 bg-charcoal-900 p-6 flex flex-col justify-between shadow-2xl z-50 fixed inset-y-0 left-0 transition-transform duration-300 lg:static lg:translate-x-0 ${isMobileOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         {/* Subtle brass header highlight */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-brass-sheen opacity-60" />
@@ -111,11 +110,10 @@ export default function DashboardLayout({
                     setActiveTab(item.id);
                     setIsMobileOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-control text-sm font-semibold tracking-wide transition-all ${
-                    isActive
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-control text-sm font-semibold tracking-wide transition-all ${isActive
                       ? "bg-charcoal-800 text-brass-300 border border-brass-700/30 shadow-brass-glow"
                       : "text-steel-300 hover:bg-charcoal-800/40 hover:text-parchment"
-                  }`}
+                    }`}
                 >
                   <span className="text-base">{item.icon}</span>
                   <span>{item.label}</span>

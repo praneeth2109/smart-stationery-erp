@@ -4,5 +4,9 @@
   "private": true,
   "scripts": {
     "build": "npm --prefix frontend install && npm --prefix frontend run build"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.111.0"
   }
 }

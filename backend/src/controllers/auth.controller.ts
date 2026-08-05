@@ -11,7 +11,7 @@ const REFRESH_COOKIE = "rt";
 const refreshCookieOptions = {
   httpOnly: true,
   secure: env.NODE_ENV === "production",
-  sameSite: "strict" as const,
+  sameSite: env.NODE_ENV === "production" ? ("none" as const) : ("lax" as const),
   // 7-day TTL matches the default JWT_REFRESH_EXPIRES_IN_DAYS
   maxAge: Number(env.JWT_REFRESH_EXPIRES_IN_DAYS) * 24 * 60 * 60 * 1000,
   path: "/api/auth",
