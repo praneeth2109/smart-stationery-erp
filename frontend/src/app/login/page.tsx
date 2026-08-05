@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { ApiRequestError } from "@/lib/api";
 
+export const dynamic = "force-dynamic";
+
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();

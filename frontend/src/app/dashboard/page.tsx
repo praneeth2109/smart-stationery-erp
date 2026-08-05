@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import DashboardLayout from "@/components/DashboardLayout";
+
+export const dynamic = "force-dynamic";
 import ProductCatalogView from "@/components/ProductCatalogView";
 import CategoryView from "@/components/CategoryView";
 import StaffDirectoryView from "@/components/StaffDirectoryView";
