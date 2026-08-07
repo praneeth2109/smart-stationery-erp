@@ -50,6 +50,10 @@ app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
 
 // --- Health check -----------------------------------------------------------
+app.get("/", (_req, res) => {
+  res.json({ status: "ok", message: "Smart Stationery ERP API is running", health: "/health" });
+});
+
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
