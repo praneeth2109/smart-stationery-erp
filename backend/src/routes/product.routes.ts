@@ -9,6 +9,8 @@ const router = Router();
 
 // Catalog read access (All staff roles)
 router.get("/", requireAuth, productController.list);
+// Barcode/SKU lookup for POS scanner — must come before /:id to avoid conflict
+router.get("/barcode/:code", requireAuth, productController.getByBarcode);
 router.get("/:id/substitutes", requireAuth, productController.getSubstitutes);
 router.get("/:id", requireAuth, productController.get);
 

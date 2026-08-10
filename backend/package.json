@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.json && tsc-alias",
+    "build": "prisma generate && tsc -p tsconfig.json && tsc-alias",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
@@ -25,6 +25,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "tsx": "^4.19.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -37,7 +38,6 @@
     "@types/node": "^20.14.15",
     "prisma": "^5.19.1",
     "tsc-alias": "^1.9.1",
-    "tsx": "^4.19.0",
     "typescript": "^5.5.4"
   }
 }
