@@ -1,6 +1,6 @@
 [build]
   base = "frontend"
-  command = "npm install && npm run build"
+  command = "npm install --include=dev && npm run build"
 
 [build.environment]
   NODE_VERSION = "20"
@@ -8,3 +8,4 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
