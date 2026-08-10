@@ -9,7 +9,7 @@ export function notFoundHandler(req: Request, res: Response) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction) {
+export function errorHandler(err: any, req: Request, res: Response, _next: NextFunction) {
   if (err instanceof ApiError) {
     return res.status(err.statusCode).json({
       success: false,
@@ -18,10 +18,14 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
     });
   }
 
-  console.error("Unhandled error:", err);
+  console.error("Unhandled error details:", err);
 
-  return res.status(500).json({
+  const message = err?.message || "An unexpected error occurred";
+  const statusCode = typeof err?.statusCode === "number" ? err.statusCode : 500;
+
+  return res.status(statusCode).json({
     success: false,
-    message: "An unexpected error occurred",
+    message,
+    ...(process.env.NODE_ENV !== "production" && { stack: err?.stack }),
   });
 }

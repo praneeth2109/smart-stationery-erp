@@ -7,8 +7,14 @@ import rateLimit from "express-rate-limit";
 import { env } from "@/config/env";
 import routes from "@/routes";
 import { errorHandler, notFoundHandler } from "@/middleware/errorHandler";
+import { ApiError } from "@/utils/ApiError";
 
 const app = express();
+
+// Trust the first proxy hop (Render, Railway, etc. all sit behind a reverse
+// proxy that sets X-Forwarded-For). Without this, express-rate-limit throws
+// ERR_ERL_UNEXPECTED_X_FORWARDED_FOR on every request in production.
+app.set("trust proxy", 1);
 
 // --- Security & core middleware -------------------------------------------
 app.use(helmet());
@@ -17,10 +23,15 @@ app.use(
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
       const allowedOrigins = env.CORS_ORIGIN.split(",").map((o) => o.trim());
-      if (allowedOrigins.includes(origin) || /^http:\/\/localhost(:\d+)?$/.test(origin)) {
+      if (
+        allowedOrigins.includes(origin) ||
+        /^http:\/\/localhost(:\d+)?$/.test(origin) ||
+        /\.netlify\.app$/.test(origin) ||
+        /\.onrender\.com$/.test(origin)
+      ) {
         return callback(null, true);
       }
-      return callback(new Error("Not allowed by CORS"));
+      return callback(ApiError.forbidden(`CORS Error: Origin ${origin} is not allowed`));
     },
     credentials: true,
   })

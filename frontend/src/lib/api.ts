@@ -221,10 +221,10 @@ export const api = {
    * `credentials: "include"` (already set in the core request helper).
    * Returns the new access token so callers can update their state.
    */
-  silentRefresh: () =>
+  silentRefresh: (refreshToken?: string) =>
     request<{ accessToken: string; user: AuthUser }>("/auth/refresh", {
       method: "POST",
-      body: JSON.stringify({}),
+      body: JSON.stringify(refreshToken ? { refreshToken } : {}),
     }),
 
   logout: (refreshToken?: string) =>

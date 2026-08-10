@@ -19,8 +19,10 @@ export function verifyAccessToken(token: string): AccessTokenPayload {
 }
 
 export function signRefreshToken(userId: string): string {
+  const daysStr = String(env.JWT_REFRESH_EXPIRES_IN_DAYS ?? "7").replace(/d$/i, "");
+  const days = parseInt(daysStr, 10) || 7;
   return jwt.sign({ userId }, env.JWT_REFRESH_SECRET, {
-    expiresIn: `${env.JWT_REFRESH_EXPIRES_IN_DAYS}d` as any,
+    expiresIn: `${days}d` as any,
   });
 }
 
@@ -29,7 +31,8 @@ export function verifyRefreshToken(token: string): { userId: string } {
 }
 
 export function getRefreshTokenExpiryDate(): Date {
-  const days = Number(env.JWT_REFRESH_EXPIRES_IN_DAYS);
+  const daysStr = String(env.JWT_REFRESH_EXPIRES_IN_DAYS ?? "7").replace(/d$/i, "");
+  const days = parseInt(daysStr, 10) || 7;
   const expires = new Date();
   expires.setDate(expires.getDate() + days);
   return expires;

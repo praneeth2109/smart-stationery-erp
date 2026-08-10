@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cap:sync": "next build && npx cap sync android",
+    "cap:open": "npx cap open android"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.0",

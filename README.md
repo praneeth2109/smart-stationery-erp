@@ -72,22 +72,26 @@ smart-stationery-erp/
 ```bash
 cd backend
 cp .env.example .env
-# edit .env: set DATABASE_URL, and generate real secrets for
-# JWT_ACCESS_SECRET / JWT_REFRESH_SECRET, e.g.:
-#   openssl rand -base64 48
+# edit .env: set DATABASE_URL and DIRECT_URL (Supabase / PostgreSQL), e.g.:
+#   DATABASE_URL="postgresql://postgres:[password]@db.[project-ref].supabase.co:6543/postgres?pgbouncer=true"
+#   DIRECT_URL="postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres"
 
 npm install
-npm run prisma:migrate     # creates the database tables
-npm run prisma:seed        # creates the default Shop Owner account
-npm run dev                # starts the API on http://localhost:4000
+npm run prisma:generate   # generates Prisma Client
+npm run prisma:deploy     # pushes database schema and seeds initial admin account
+npm run dev               # starts the API on http://localhost:4000
 ```
 
 Default seeded login:
 - Email: `admin@stationeryerp.com`
 - Password: `Admin@12345`
 
-**Change this password in Phase 2** once a "change password" flow / user
-management screen exists — it's a seed default, not meant for production use.
+### 🚀 Production Deployment (Render + Supabase)
+1. **Database**: Create a PostgreSQL project on [Supabase](https://supabase.com). Copy both the **Transaction Pooler URL** (`DATABASE_URL`) and **Direct Connection URL** (`DIRECT_URL`).
+2. **Render Backend Web Service**:
+   - **Build Command**: `npm --prefix backend install && npm --prefix backend run build`
+   - **Start Command**: `npx prisma db push --schema=backend/prisma/schema.prisma && npx tsx backend/prisma/seed.ts && node backend/dist/index.js` (or `cd backend && npm run prisma:deploy && npm start`)
+   - **Environment Variables**: Add `DATABASE_URL`, `DIRECT_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ORIGIN=https://your-app.netlify.app`.
 
 ### 2. Frontend
 

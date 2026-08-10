@@ -7,13 +7,16 @@ import { env } from "@/config/env";
 /** Name used for the HttpOnly refresh-token cookie */
 const REFRESH_COOKIE = "rt";
 
+const refreshDaysStr = String(env.JWT_REFRESH_EXPIRES_IN_DAYS ?? "7").replace(/d$/i, "");
+const refreshDays = parseInt(refreshDaysStr, 10) || 7;
+
 /** Cookie options shared across set/clear calls */
 const refreshCookieOptions = {
   httpOnly: true,
   secure: env.NODE_ENV === "production",
   sameSite: env.NODE_ENV === "production" ? ("none" as const) : ("lax" as const),
   // 7-day TTL matches the default JWT_REFRESH_EXPIRES_IN_DAYS
-  maxAge: Number(env.JWT_REFRESH_EXPIRES_IN_DAYS) * 24 * 60 * 60 * 1000,
+  maxAge: refreshDays * 24 * 60 * 60 * 1000,
   path: "/api/auth",
 };
 

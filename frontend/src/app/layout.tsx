@@ -28,10 +28,18 @@ export const metadata: Metadata = {
   title: "RR Stationery ERP - Smart Business OS",
   description: "A complete business operating system & POS billing platform for stationery and bookstore owners.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/brand/rr-logo.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "RR Stationery ERP",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
   },
 };
 

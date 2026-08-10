@@ -33,13 +33,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   accessTokenRef.current = accessToken;
 
   // ── Persist helpers ────────────────────────────────────────────────────
-  function persistSession(sessionUser: AuthUser, token: string) {
+  function persistSession(sessionUser: AuthUser, token: string, refreshToken?: string) {
     setUser(sessionUser);
     setAccessToken(token);
-    // Only persist non-sensitive data; refresh token lives in HttpOnly cookie
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ user: sessionUser, accessToken: token })
+      JSON.stringify({ user: sessionUser, accessToken: token, refreshToken })
     );
   }
 
@@ -52,9 +51,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ── Silent refresh callback (called by api.ts on 401) ──────────────────
   const silentRefresh = useCallback(async (): Promise<string | null> => {
     try {
-      const result = await api.silentRefresh();
+      let storedRefreshToken: string | undefined;
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        try {
+          storedRefreshToken = JSON.parse(raw)?.refreshToken;
+        } catch {
+          // ignore error
+        }
+      }
+      const result = await api.silentRefresh(storedRefreshToken);
       // Update state and storage with the new access token
-      persistSession(result.user, result.accessToken);
+      persistSession(result.user, result.accessToken, storedRefreshToken);
       return result.accessToken;
     } catch {
       clearSession();
@@ -86,13 +94,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ── Auth actions ────────────────────────────────────────────────────────
   const login = useCallback(async (email: string, password: string) => {
     const result = await api.login(email, password);
-    persistSession(result.user, result.accessToken);
-    // refreshToken now lives exclusively in the HttpOnly cookie set by the server
+    persistSession(result.user, result.accessToken, result.refreshToken);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const logout = useCallback(async () => {
-    // The cookie will be cleared server-side; pass nothing from JS
-    await api.logout().catch(() => undefined);
+    let storedRefreshToken: string | undefined;
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      try {
+        storedRefreshToken = JSON.parse(raw)?.refreshToken;
+      } catch {
+        // ignore error
+      }
+    }
+    await api.logout(storedRefreshToken).catch(() => undefined);
     clearSession();
   }, []);
 

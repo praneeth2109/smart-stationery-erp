@@ -1,0 +1,73 @@
+# Walkthrough - Phase 11: Android Mobile App Capacitor Sync
+
+Phase 11 configures the full Capacitor Android build pipeline so the Next.js app compiles to a static bundle and syncs directly into the native Android project at `frontend/android/`, ready for Android Studio to compile into a `com.rrstationery.erp` APK.
+
+## Key Changes Made
+
+### 1. Static Export — [next.config.js](file:///c:/Users/jagan/Downloads/smart-stationery-erp-phase1/frontend/next.config.js)
+- Added `output: "export"` so `next build` produces a fully static `out/` directory.
+- Added `trailingSlash: true` so routes like `/dashboard` resolve to `dashboard/index.html` inside the APK assets.
+
+### 2. Capacitor Configuration — [capacitor.config.ts](file:///c:/Users/jagan/Downloads/smart-stationery-erp-phase1/frontend/capacitor.config.ts)
+- `server.androidScheme: "https"` — ensures cookies and `fetch()` calls work correctly inside the Capacitor WebView.
+- `SplashScreen` plugin config — dark `#0d0b09` background matching the ERP theme, auto-hides after 1.5 s.
+- `android.allowMixedContent: false` — enforces HTTPS on all production network calls.
+- `android.captureInput: true` — improves keyboard handling on Android.
+
+### 3. NPM Scripts — [package.json](file:///c:/Users/jagan/Downloads/smart-stationery-erp-phase1/frontend/package.json)
+| Script | Command | Purpose |
+|---|---|---|
+| `cap:sync` | `next build && npx cap sync android` | Full export + asset sync in one step |
+| `cap:open` | `npx cap open android` | Opens project in Android Studio |
+
+### 4. Android Manifest — [AndroidManifest.xml](file:///c:/Users/jagan/Downloads/smart-stationery-erp-phase1/frontend/android/app/src/main/AndroidManifest.xml)
+New permissions added for future POS hardware features:
+- `CAMERA` — barcode / QR code scanning
+- `VIBRATE` — payment success haptic feedback
+- `USE_BIOMETRIC` / `USE_FINGERPRINT` — biometric PIN login
+- `android:usesCleartextTraffic="false"` — no HTTP in production
+- `android:windowSoftInputMode="adjustResize"` — keyboard doesn't overlap input fields
+
+### 5. Network Security Config — [network_security_config.xml](file:///c:/Users/jagan/Downloads/smart-stationery-erp-phase1/frontend/android/app/src/main/res/xml/network_security_config.xml)
+- Blocks all cleartext HTTP in production.
+- Whitelists `localhost` and `10.0.2.2` (Android emulator loopback) for Capacitor live-reload in development.
+
+### 6. Version Bump — [build.gradle](file:///c:/Users/jagan/Downloads/smart-stationery-erp-phase1/frontend/android/app/build.gradle)
+- `versionCode 2`, `versionName "1.1.0"`.
+
+---
+
+## Verification Results
+
+### Build — `npm --prefix frontend run build`
+```
+✓ Compiled successfully
+✓ Generating static pages (6/6)
+○ / ○ /dashboard ○ /login — all static
+```
+Static `out/` directory confirmed: `index.html`, `dashboard/`, `login/`, `_next/` assets all present.
+
+### Capacitor Sync — `npx cap sync android`
+```
+✓ Copying web assets from out to android\app\src\main\assets\public in 83.97ms
+✓ Creating capacitor.config.json in android\app\src\main\assets in 1.60ms
+✓ copy android in 106.62ms
+✓ Updating Android plugins in 3.15ms
+✓ update android in 67.31ms
+Sync finished in 0.214s
+```
+
+---
+
+## Next Steps — Opening in Android Studio
+
+To build and run the APK on a device or emulator:
+
+```bash
+cd frontend
+npm run cap:open        # opens frontend/android in Android Studio
+```
+
+Then in Android Studio:
+1. Click **Build → Make Project** (Ctrl+F9).
+2. Click **Run → Run 'app'** (Shift+F10) to deploy to an emulator or physical device.
